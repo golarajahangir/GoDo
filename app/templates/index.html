@@ -1,0 +1,52 @@
+{% extends "bootstrap/base.html" %}
+
+<head>
+    <title>GO DO list</title>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash">
+        {% for message in messages %}
+        <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+</head>
+{% block content %}
+
+<div class="container my-5">
+    <h1 class="text-center">GO DO list</h1>
+    <form method="POST" action="/">
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.body.label(class="form-control-label") }}
+            {{ form.body(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Add Task</button>
+        </div>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Update</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr>
+                <td class="col-4">{{ task.body }}</td>
+                <td class="col-1">
+                    <a class="btn btn-warning d-inline-block" href="/edit/{{task.id}}">Update</a>
+                </td>
+                <td>
+                    <a class="btn btn-danger d-inline-block" href="/delete/{{task.id}}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
