@@ -1,18 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from flask import Flask, redirect, render_template, url_for
 from flask_bootstrap import Bootstrap
-from app.forms import AddTaskForm, EditTaskForm
-from app.config import Config
+from flask_migrate import Migrate
+from flask_moment import Moment
+from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
-app = Flask(__name__)
+from app.config import Config
+from app.forms import AddTaskForm, EditTaskForm
+
+app = Flask(__name__, static_folder='static')
 app.config["SQLALCHEMY_DATABASE_URI"] = Config.SQLALCHEMY_DATABASE_URI
 app.secret_key = Config.SECRET_KEY
-db.init_app(app)
+db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
-
+moment = Moment(app)
 from app.models import Task
 
 
@@ -22,7 +23,7 @@ def index():
     tasks = db.session.execute(db.select(Task)).scalars()
     addForm = AddTaskForm()
     if addForm.validate_on_submit():
-        task = Task(body=addForm.body.data, status=False)
+        task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
         db.session.add(task)
         db.session.commit()
     return render_template("index.html", form=addForm, tasks=tasks)
@@ -42,6 +43,8 @@ def edit(id):
     task = db.get_or_404(Task, id)
     if editForm.validate_on_submit():
         task.body = editForm.body.data
+        task.is_done = editForm.is_done.data
+        task.due_date = editForm.due_date.data
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("edit.html", form=editForm, task=task)
