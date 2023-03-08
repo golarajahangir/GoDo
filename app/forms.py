@@ -12,3 +12,6 @@ class EditTaskForm(FlaskForm):
     body = StringField("", validators=[DataRequired()])
     is_done = BooleanField("Have you finished your task?")
     due_date = DateField("Due date", validators=[Optional()])
+
+class SearchForm(FlaskForm):
+    text = StringField("")

@@ -5,7 +5,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 
 from app.config import Config
-from app.forms import AddTaskForm, EditTaskForm
+from app.forms import AddTaskForm, EditTaskForm, SearchForm
 
 app = Flask(__name__, static_folder='static')
 app.config["SQLALCHEMY_DATABASE_URI"] = Config.SQLALCHEMY_DATABASE_URI
@@ -22,12 +22,15 @@ from app.models import Task
 def index():
     tasks = db.session.execute(db.select(Task)).scalars()
     addForm = AddTaskForm()
+    searchForm = SearchForm()
+    if searchForm.validate_on_submit():
+        search_query='%{0}%'.format(searchForm.text.data)
+        tasks = db.session.query(Task).filter(Task.body.like(search_query))
     if addForm.validate_on_submit():
         task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
         db.session.add(task)
         db.session.commit()
-    return render_template("index.html", form=addForm, tasks=tasks)
-
+    return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
 
 @app.route("/delete/<int:id>")
 def delete(id):
