@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, url_for
+from flask import Flask, redirect, render_template, url_for, request
 from flask_bootstrap import Bootstrap
 from flask_migrate import Migrate
 from flask_moment import Moment
@@ -21,6 +21,8 @@ from app.models import Task
 @app.route("/index", methods=["POST", "GET"])
 def index():
     tasks = db.session.execute(db.select(Task)).scalars()
+    sort_by = request.args.get("sort_by")
+    order = request.args.get("order")
     addForm = AddTaskForm()
     searchForm = SearchForm()
     if searchForm.validate_on_submit():
@@ -30,6 +32,25 @@ def index():
         task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
         db.session.add(task)
         db.session.commit()
+        return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
+
+    if sort_by=="created_at":
+        if order=="asc":
+            tasks =db.session.execute(db.select(Task).order_by(Task.created_at)).scalars()
+        else:
+            tasks =db.session.execute(db.select(Task).order_by(Task.created_at.desc())).scalars()
+
+    if sort_by=="due_date":
+        if order=="asc":
+            tasks =db.session.execute(db.select(Task).order_by(Task.due_date)).scalars()
+        else:
+            tasks =db.session.execute(db.select(Task).order_by(Task.due_date.desc())).scalars()
+            
+    if sort_by=="is_done":
+        tasks =db.session.execute(db.select(Task).filter_by(is_done=True)).scalars()
+    if sort_by=="not_done":
+        tasks =db.session.execute(db.select(Task).filter_by(is_done=False)).scalars()
+
     return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
 
 @app.route("/delete/<int:id>")
@@ -51,3 +72,5 @@ def edit(id):
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("edit.html", form=editForm, task=task)
+
+

@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime
 
 
 class Task(db.Model):
@@ -6,3 +7,4 @@ class Task(db.Model):
     body = db.Column(db.String, nullable=False)
     is_done = db.Column(db.Boolean)
     due_date = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow())
