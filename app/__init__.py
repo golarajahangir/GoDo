@@ -34,17 +34,15 @@ def index():
         db.session.commit()
         return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
 
-    if sort_by=="created_at":
-        if order=="asc":
-            tasks =db.session.execute(db.select(Task).order_by(Task.created_at)).scalars()
-        else:
-            tasks =db.session.execute(db.select(Task).order_by(Task.created_at.desc())).scalars()
+    if sort_by=="created_at" and order=="asc":
+        tasks =db.session.execute(db.select(Task).order_by(Task.created_at)).scalars()
+    elif sort_by=="created_at" and order=="desc":
+        tasks =db.session.execute(db.select(Task).order_by(Task.created_at.desc())).scalars()
 
-    if sort_by=="due_date":
-        if order=="asc":
-            tasks =db.session.execute(db.select(Task).order_by(Task.due_date)).scalars()
-        else:
-            tasks =db.session.execute(db.select(Task).order_by(Task.due_date.desc())).scalars()
+    if sort_by=="due_date" and order=="asc":
+        tasks =db.session.execute(db.select(Task).order_by(Task.due_date)).scalars()
+    elif sort_by=="due_date" and order=="desc":
+        tasks =db.session.execute(db.select(Task).order_by(Task.due_date.desc())).scalars()
             
     if sort_by=="is_done":
         tasks =db.session.execute(db.select(Task).filter_by(is_done=True)).scalars()
