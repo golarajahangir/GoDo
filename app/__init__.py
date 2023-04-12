@@ -22,6 +22,7 @@ from app.models import Task
 def index():
     tasks = db.session.execute(db.select(Task)).scalars()
     sort_by = request.args.get("sort_by")
+    filter_by = request.args.get("filter_by")
     order = request.args.get("order")
     addForm = AddTaskForm()
     searchForm = SearchForm()
@@ -32,22 +33,15 @@ def index():
         task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
         db.session.add(task)
         db.session.commit()
-        return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
 
-    if sort_by=="created_at" and order=="asc":
-        tasks =db.session.execute(db.select(Task).order_by(Task.created_at)).scalars()
-    elif sort_by=="created_at" and order=="desc":
-        tasks =db.session.execute(db.select(Task).order_by(Task.created_at.desc())).scalars()
-
-    if sort_by=="due_date" and order=="asc":
-        tasks =db.session.execute(db.select(Task).order_by(Task.due_date)).scalars()
-    elif sort_by=="due_date" and order=="desc":
-        tasks =db.session.execute(db.select(Task).order_by(Task.due_date.desc())).scalars()
-            
-    if sort_by=="is_done":
-        tasks =db.session.execute(db.select(Task).filter_by(is_done=True)).scalars()
-    if sort_by=="not_done":
-        tasks =db.session.execute(db.select(Task).filter_by(is_done=False)).scalars()
+    if sort_by:
+        if order=="desc":
+            tasks =db.session.execute(db.select(Task).order_by(getattr(Task, sort_by).desc())).scalars()
+        else:
+            tasks =db.session.execute(db.select(Task).order_by(getattr(Task, sort_by))).scalars()
+    
+    if filter_by:
+        tasks =db.session.execute(db.select(Task).filter_by(is_done=bool(filter_by=="True"))).scalars()
 
     return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
 
