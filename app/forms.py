@@ -15,3 +15,6 @@ class EditTaskForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     text = StringField("")
+    to_do = BooleanField("Search on todo")
+    due_date_sort = BooleanField("Search and sort asc on due date")
+
