@@ -27,8 +27,19 @@ def index():
     addForm = AddTaskForm()
     searchForm = SearchForm()
     if searchForm.validate_on_submit():
+        to_do = searchForm.to_do.data
+        due_date_sort = searchForm.due_date_sort.data
         search_query='%{0}%'.format(searchForm.text.data)
-        tasks = db.session.query(Task).filter(Task.body.like(search_query))
+
+        if to_do and due_date_sort:
+            tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query), Task.is_done == False).order_by("due_date")).scalars()
+        elif to_do:
+            tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query)).filter_by(is_done=False).order_by("due_date")).scalars()
+        elif due_date_sort:
+            tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query)).order_by("due_date")).scalars()
+        else:
+            tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query))).scalars()
+
     if addForm.validate_on_submit():
         task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
         db.session.add(task)
