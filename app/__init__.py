@@ -5,7 +5,7 @@ from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 
 from app.config import Config
-from app.forms import AddTaskForm, EditTaskForm, SearchForm
+from app.forms import AddTaskForm, EditTaskForm, SearchForm, AddLabelForm
 
 app = Flask(__name__, static_folder='static')
 app.config["SQLALCHEMY_DATABASE_URI"] = Config.SQLALCHEMY_DATABASE_URI
@@ -14,18 +14,21 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
-from app.models import Task
+from app.models import Task,Label
 
 
 @app.route("/", methods=["POST", "GET"])
 @app.route("/index", methods=["POST", "GET"])
 def index():
     tasks = db.session.execute(db.select(Task)).scalars()
+    labels = db.session.execute(db.select(Label)).scalars()
     sort_by = request.args.get("sort_by")
     filter_by = request.args.get("filter_by")
     order = request.args.get("order")
     addForm = AddTaskForm()
     searchForm = SearchForm()
+    addLabelForm = AddLabelForm()
+    addForm.labels.choices = [(label.id, label.name) for label in labels]
     if searchForm.validate_on_submit():
         to_do = searchForm.to_do.data
         due_date_sort = searchForm.due_date_sort.data
@@ -40,8 +43,15 @@ def index():
         else:
             tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query))).scalars()
 
+    if addLabelForm.validate_on_submit():
+        label = Label(name=addLabelForm.name.data)
+        db.session.add(label)
+        db.session.commit()
+
     if addForm.validate_on_submit():
-        task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data)
+        label_ids = addForm.labels.data
+        labels = db.session.query(Label).filter(Label.id.in_(label_ids)).all()
+        task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data, labels=labels)
         db.session.add(task)
         db.session.commit()
 
@@ -54,7 +64,7 @@ def index():
     if filter_by:
         tasks =db.session.execute(db.select(Task).filter_by(is_done=bool(filter_by=="True"))).scalars()
 
-    return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm)
+    return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm, addLabelForm=addLabelForm)
 
 @app.route("/delete/<int:id>")
 def delete(id):
@@ -75,5 +85,3 @@ def edit(id):
         db.session.commit()
         return redirect(url_for("index"))
     return render_template("edit.html", form=editForm, task=task)
-
-
