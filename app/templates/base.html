@@ -1,0 +1,43 @@
+<html>
+
+<head>
+    <title>GO DO list</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    {% with
+    messages=get_flashed_messages() %} {% if messages %} <div class="flash">
+        {% for message in messages %}
+        <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {{ moment.include_moment() }}
+</head>
+{% extends "bootstrap/base.html" %}
+
+
+<body>
+    {% block navbar %}
+    <div class="container">
+        <nav class="navbar navbar-light bg-light">
+            <div>
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url_for('index') }}">Home <span
+                                class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('create') }}">Create Tasks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('label') }}">Labels</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        {% endblock %}
+
+        {% block content %}{% endblock %}
+</body>
+
+</html>

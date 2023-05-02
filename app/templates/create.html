@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-center">Create Task</h1>
+<form method="POST">
+    {{ form.csrf_token }}
+    <div class="form-group">
+        {{ form.body.label(class="form-control-label") }}
+        {{ form.body(class="form-control") }}
+    </div>
+    {% for error in form.due_date.errors %}
+    <span class="text-danger">{{ error }}</span>
+    {% endfor %}
+    <div class="form-group">
+        {{ form.due_date.label }}
+        {{ form.due_date(class="form-control") }}
+    </div>
+    {%if form.labels %}
+    {% for error in form.labels.errors %}
+    <span class="text-danger">{{ error }}</span>
+    {% endfor %}
+    <div class="form-group">
+        {{ form.labels.label }}
+        {{ form.labels(class="form-control") }}
+    </div>
+    {%endif%}
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Add Task</button>
+    </div>
+</form>
+{% endblock %}

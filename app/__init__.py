@@ -21,14 +21,11 @@ from app.models import Task,Label
 @app.route("/index", methods=["POST", "GET"])
 def index():
     tasks = db.session.execute(db.select(Task)).scalars()
-    labels = db.session.execute(db.select(Label)).scalars()
     sort_by = request.args.get("sort_by")
     filter_by = request.args.get("filter_by")
     order = request.args.get("order")
-    addForm = AddTaskForm()
+    
     searchForm = SearchForm()
-    addLabelForm = AddLabelForm()
-    addForm.labels.choices = [(label.id, label.name) for label in labels]
     if searchForm.validate_on_submit():
         to_do = searchForm.to_do.data
         due_date_sort = searchForm.due_date_sort.data
@@ -43,18 +40,6 @@ def index():
         else:
             tasks = db.session.execute(db.select(Task).filter(Task.body.like(search_query))).scalars()
 
-    if addLabelForm.validate_on_submit():
-        label = Label(name=addLabelForm.name.data)
-        db.session.add(label)
-        db.session.commit()
-
-    if addForm.validate_on_submit():
-        label_ids = addForm.labels.data
-        labels = db.session.query(Label).filter(Label.id.in_(label_ids)).all()
-        task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data, labels=labels)
-        db.session.add(task)
-        db.session.commit()
-
     if sort_by:
         if order=="desc":
             tasks =db.session.execute(db.select(Task).order_by(getattr(Task, sort_by).desc())).scalars()
@@ -64,7 +49,33 @@ def index():
     if filter_by:
         tasks =db.session.execute(db.select(Task).filter_by(is_done=bool(filter_by=="True"))).scalars()
 
-    return render_template("index.html", form=addForm, tasks=tasks, searchForm=searchForm, addLabelForm=addLabelForm)
+    return render_template("index.html", tasks=tasks, searchForm=searchForm)
+
+@app.route("/label", methods=["POST", "GET"])
+def label():
+    addLabelForm = AddLabelForm()
+
+    if addLabelForm.validate_on_submit():
+        label = Label(name=addLabelForm.name.data)
+        db.session.add(label)
+        db.session.commit()
+
+    return render_template("label.html", addLabelForm=addLabelForm)
+
+@app.route("/create", methods=["POST", "GET"])
+def create():
+    addForm = AddTaskForm()
+    labels = db.session.execute(db.select(Label)).scalars()
+    addForm.labels.choices = [(label.id, label.name) for label in labels]
+
+    if addForm.validate_on_submit():
+        label_ids = addForm.labels.data
+        labels = db.session.query(Label).filter(Label.id.in_(label_ids)).all()
+        task = Task(body=addForm.body.data, is_done=False, due_date=addForm.due_date.data, labels=labels)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(url_for("index"))
+    return render_template("create.html", form=addForm)
 
 @app.route("/delete/<int:id>")
 def delete(id):
