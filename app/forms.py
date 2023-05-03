@@ -13,6 +13,7 @@ class EditTaskForm(FlaskForm):
     body = StringField("", validators=[DataRequired()])
     is_done = BooleanField("Have you finished your task?")
     due_date = DateField("Due date", validators=[Optional()])
+    labels = SelectMultipleField("Labels", validate_choice=False, coerce=int)
 
 class SearchForm(FlaskForm):
     text = StringField("")
