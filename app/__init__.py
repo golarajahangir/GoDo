@@ -87,9 +87,13 @@ def delete(id):
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
 def edit(id):
+    labels = db.session.execute(db.select(Label)).scalars()
     editForm = EditTaskForm()
+    editForm.labels.choices = [(label.id, label.name) for label in labels]
     task = db.get_or_404(Task, id)
     if editForm.validate_on_submit():
+        label_ids = editForm.labels.data
+        task.labels = db.session.query(Label).filter(Label.id.in_(label_ids)).all()
         task.body = editForm.body.data
         task.is_done = editForm.is_done.data
         task.due_date = editForm.due_date.data

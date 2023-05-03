@@ -21,6 +21,16 @@
             {{ form.due_date.label }}
             {{ form.due_date(class="form-control", value=task.due_date.strftime("%Y-%m-%d") if task.due_date) }}
         </div>
+        {% for label in task.labels %}
+        <span class="badge badge-pill badge-success">{{ label.name }}</span>
+        {%endfor%}
+        {% for error in form.labels.errors %}
+        <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+        <div class="form-group">
+            {{ form.labels.label }}
+            {{ form.labels(class="form-control") }}
+        </div>
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Update</button>
         </div>
