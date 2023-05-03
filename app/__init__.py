@@ -53,14 +53,14 @@ def index():
 
 @app.route("/label", methods=["POST", "GET"])
 def label():
+    labels = db.session.execute(db.select(Label)).scalars()
     addLabelForm = AddLabelForm()
-
     if addLabelForm.validate_on_submit():
         label = Label(name=addLabelForm.name.data)
         db.session.add(label)
         db.session.commit()
 
-    return render_template("label.html", addLabelForm=addLabelForm)
+    return render_template("label.html", addLabelForm=addLabelForm, labels=labels)
 
 @app.route("/create", methods=["POST", "GET"])
 def create():

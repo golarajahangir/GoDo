@@ -13,4 +13,31 @@
         <button type="submit" class="btn btn-primary d-inline-block">Add new label </button>
     </div>
 </form>
+<br />
+<br />
+<br />
+<table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Label</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for label in labels %}
+        <tr>
+            <td>{{label.id}}</td>
+            <td>{{ label.name }}</td>
+
+            <td class="col-1">
+                <a class="btn btn-warning d-inline-block" href="/label/edit/{{label.id}}">Update</a>
+            </td>
+            <td>
+                <a class="btn btn-danger d-inline-block" href="/label/delete/{{label.id}}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}
